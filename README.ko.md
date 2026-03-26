@@ -64,6 +64,8 @@ xcodebuild -project VeryBattery.xcodeproj -scheme VeryBattery -destination 'plat
 
 클린 Mac 테스트 절차, helper 승인 흐름, 서명/노타리제이션 체크는 [DEPLOYMENT.md](./DEPLOYMENT.md)에 정리되어 있습니다.
 
+릴리즈 본문 템플릿은 [RELEASE.md](./RELEASE.md), [RELEASE.ko.md](./RELEASE.ko.md)에 정리되어 있습니다.
+
 ## 작성자
 
 John (`nam9295-cmyk`)

@@ -64,6 +64,8 @@ xcodebuild -project VeryBattery.xcodeproj -scheme VeryBattery -destination 'plat
 
 Detailed clean-machine test steps, approval flow, signing notes, and deployment checks are documented in [DEPLOYMENT.md](./DEPLOYMENT.md).
 
+Release note templates are available in [RELEASE.md](./RELEASE.md) and [RELEASE.ko.md](./RELEASE.ko.md).
+
 ## Author
 
 John (`nam9295-cmyk`)
