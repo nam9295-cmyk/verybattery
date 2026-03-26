@@ -1,5 +1,7 @@
 # VeryBattery
 
+[한국어 README](./README.ko.md)
+
 The most elegant and practical way to preserve your Mac's battery life.
 
 VeryBattery is a macOS menu bar utility for charge-limit control, thermal protection, and app-based battery automation. It is designed for long plugged-in sessions such as rendering, design work, and laptop desk use.

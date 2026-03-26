@@ -92,6 +92,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ko,
 			);
 			mainGroup = 4931846D2F74B1490050033E;
 			minimizedProjectReferenceProxies = 1;
@@ -104,6 +105,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		493184742F74B1490050033E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
 		A10000012F74B1490050033E /* Build Privileged Helper */ = {
@@ -131,16 +142,6 @@
 			shellScript = "set -euo pipefail\nAPP_BUNDLE_PATH=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\nHELPER_OUTPUT_DIR=\"${APP_BUNDLE_PATH}/Contents/Library/HelperTools\"\nLAUNCHD_OUTPUT_DIR=\"${APP_BUNDLE_PATH}/Contents/Library/LaunchDaemons\"\nHELPER_OUTPUT_PATH=\"${HELPER_OUTPUT_DIR}/com.verygood.VeryBattery.PrivilegedHelper\"\nHELPER_PLIST_SOURCE=\"${SRCROOT}/Scripts/com.verygood.VeryBattery.PrivilegedHelper.plist\"\nHELPER_PLIST_OUTPUT=\"${LAUNCHD_OUTPUT_DIR}/com.verygood.VeryBattery.PrivilegedHelper.plist\"\nmkdir -p \"${HELPER_OUTPUT_DIR}\" \"${LAUNCHD_OUTPUT_DIR}\"\nxcrun swiftc -DHELPER_TOOL \"${SRCROOT}/VeryBattery/BatteryPrivilegedProtocol.swift\" \"${SRCROOT}/Scripts/VeryBatteryPrivilegedHelper.swift\" -o \"${HELPER_OUTPUT_PATH}\"\nchmod 755 \"${HELPER_OUTPUT_PATH}\"\ncp \"${HELPER_PLIST_SOURCE}\" \"${HELPER_PLIST_OUTPUT}\"\nchmod 644 \"${HELPER_PLIST_OUTPUT}\"\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ]; then\n  /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --timestamp=none \"${HELPER_OUTPUT_PATH}\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
-
-/* Begin PBXResourcesBuildPhase section */
-		493184742F74B1490050033E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		493184722F74B1490050033E /* Sources */ = {

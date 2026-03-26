@@ -8,7 +8,7 @@ struct ContentView: View {
     @State private var currentLimit = 100
     @State private var batteryPercentage = "--%"
     @State private var batteryTemperatureText = "--.-°C"
-    @State private var powerStatus = "상태 확인 중..."
+    @State private var powerStatus = NSLocalizedString("status.checking", comment: "")
     @State private var isPreparingForTrip = false
     @State private var isSailingModeEnabled = false
     @State private var isSailingChargeBlocked = false
@@ -21,8 +21,8 @@ struct ContentView: View {
     @State private var lastAppliedCommand = ""
     @State private var tripChargeResetWorkItem: DispatchWorkItem?
     @State private var isHelperApprovalAlertPresented = false
-    @State private var helperAlertTitle = "관리자 권한 승인 필요"
-    @State private var helperAlertMessage = "배터리 제어를 위해 관리자 권한 helper 승인이 필요합니다."
+    @State private var helperAlertTitle = NSLocalizedString("helper.alert.title", comment: "")
+    @State private var helperAlertMessage = NSLocalizedString("helper.alert.short", comment: "")
     @AppStorage("storedCurrentLimit") private var storedCurrentLimit = 100
     @AppStorage("storedSailingModeEnabled") private var storedSailingModeEnabled = false
     @AppStorage("storedForceDischargeEnabled") private var storedForceDischargeEnabled = false
@@ -33,16 +33,20 @@ struct ContentView: View {
     private let workspaceNotificationCenter = NSWorkspace.shared.notificationCenter
     private let accentColor = Color(red: 0.36, green: 0.49, blue: 0.41)
     private let batteryExecutableCandidates = ["/usr/local/bin/battery", "/opt/homebrew/bin/battery"]
+    
+    private func l(_ key: String) -> String {
+        NSLocalizedString(key, comment: "")
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             // 헤더 영역
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("배터리")
+                    Text(l("app.title"))
                         .font(.system(size: 13, weight: .semibold, design: .default))
                         .foregroundColor(.primary)
-                    Text("Mac의 배터리 수명을 위해 충전 한도를 제어합니다.")
+                    Text(l("app.subtitle"))
                         .font(.system(size: 11, weight: .regular, design: .default))
                         .foregroundColor(.secondary)
                 }
@@ -77,7 +81,7 @@ struct ContentView: View {
             
             // 순정 macOS 스타일 토글 행
             HStack {
-                Text("충전 한도")
+                Text(l("limit.title"))
                     .font(.system(size: 13, weight: .medium, design: .default))
                     .foregroundColor(.primary)
                 
@@ -96,7 +100,7 @@ struct ContentView: View {
             .padding(.bottom, 4)
             
             HStack {
-                Text("세일링 모드")
+                Text(l("sailing.title"))
                     .font(.system(size: 13, weight: .medium, design: .default))
                     .foregroundColor(.primary)
                 
@@ -112,7 +116,7 @@ struct ContentView: View {
             .padding(.vertical, 8)
             .padding(.bottom, 2)
             
-            Text("75%까지 떨어질 때까지 충전을 멈춰 배터리 스트레스를 줄입니다.")
+            Text(l("sailing.caption"))
                 .font(.system(size: 10, weight: .regular, design: .default))
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -120,7 +124,7 @@ struct ContentView: View {
                 .padding(.bottom, 6)
             
             HStack {
-                Text("강제 방전 모드")
+                Text(l("force_discharge.title"))
                     .font(.system(size: 13, weight: .medium, design: .default))
                     .foregroundColor(.primary)
                 
@@ -136,7 +140,7 @@ struct ContentView: View {
             .padding(.vertical, 8)
             .padding(.bottom, 2)
             
-            Text("어댑터 연결 중에도 전력을 차단해 배터리를 소모시킵니다.")
+            Text(l("force_discharge.caption"))
             .font(.system(size: 10, weight: .regular, design: .default))
             .foregroundColor(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -144,7 +148,7 @@ struct ContentView: View {
             .padding(.bottom, 8)
             
             HStack {
-                Text("열 보호 모드")
+                Text(l("thermal.title"))
                     .font(.system(size: 13, weight: .medium, design: .default))
                     .foregroundColor(.primary)
                 
@@ -155,13 +159,13 @@ struct ContentView: View {
                     .toggleStyle(.switch)
                     .controlSize(.mini)
                     .tint(accentColor)
-                    .help("배터리 온도가 35°C를 초과하면 어댑터 전력을 강제로 차단하여 열 손상을 방지합니다.")
+                    .help(l("thermal.help"))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .padding(.bottom, 2)
             
-            Text("35°C 이상에서는 충전을 잠시 멈추고, 온도가 내려가면 다시 원래 한도로 복귀합니다.")
+            Text(l("thermal.caption"))
                 .font(.system(size: 10, weight: .regular, design: .default))
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -170,13 +174,13 @@ struct ContentView: View {
             
             HStack {
                 Button(action: startTripCharge) {
-                    Text(isPreparingForTrip ? "풀충전 진행 중... (타이머)" : "외출 준비 (2시간 풀충전)")
+                    Text(isPreparingForTrip ? l("trip.running") : l("trip.button"))
                         .font(.system(size: 12, weight: .medium, design: .default))
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.regular)
                 .disabled(isPreparingForTrip)
-                .help("즉시 100% 충전을 시작하고, 2시간 뒤에 자동으로 80% 유지 모드로 복귀합니다.")
+                .help(l("trip.help"))
                 
                 Spacer()
             }
@@ -185,14 +189,14 @@ struct ContentView: View {
             
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("자동 풀충전 앱 등록")
+                    Text(l("apps.title"))
                         .font(.system(size: 12, weight: .semibold, design: .default))
                         .foregroundColor(.primary)
                     
                     Spacer()
                     
                     Button(action: presentAppPicker) {
-                        Label("앱 추가", systemImage: "plus")
+                        Label(l("apps.add"), systemImage: "plus")
                             .font(.system(size: 11, weight: .medium, design: .default))
                     }
                     .buttonStyle(.borderedProminent)
@@ -201,7 +205,7 @@ struct ContentView: View {
                 }
                 
                 if autoFullChargeApps.isEmpty {
-                    Text("등록한 앱이 실행되면 자동으로 100% 충전 모드가 시작됩니다.")
+                    Text(l("apps.empty"))
                         .font(.system(size: 10, weight: .regular, design: .default))
                         .foregroundColor(.secondary)
                 } else {
@@ -247,7 +251,7 @@ struct ContentView: View {
             HStack {
                 Spacer()
                 
-                Button("종료", action: quitApp)
+                Button(l("quit.button"), action: quitApp)
                     .font(.system(size: 11, weight: .medium, design: .default))
                     .buttonStyle(.bordered)
                     .controlSize(.small)
@@ -260,7 +264,7 @@ struct ContentView: View {
         }
         .frame(width: 270)
         .alert(helperAlertTitle, isPresented: $isHelperApprovalAlertPresented) {
-            Button("확인", role: .cancel) {}
+            Button(l("common.ok"), role: .cancel) {}
         } message: {
             Text(helperAlertMessage)
         }
@@ -374,7 +378,7 @@ struct ContentView: View {
                 break
             case .failure(let error):
                 if case PrivilegedHelperError.helperRequiresApproval = error {
-                    powerStatus = "helper 승인 필요"
+                    powerStatus = l("helper.status.approval_needed")
                     presentHelperApprovalAlert()
                 } else {
                     print("Privileged helper 오류: \(error.localizedDescription)")
@@ -431,8 +435,8 @@ struct ContentView: View {
     }
     
     func presentHelperApprovalAlert() {
-        helperAlertTitle = "관리자 권한 승인 필요"
-        helperAlertMessage = "처음 한 번은 privileged helper 설치 승인이 필요합니다.\n\n암호 입력 또는 시스템 설정의 로그인 항목/백그라운드 항목에서 VeryBattery helper를 허용한 뒤 다시 시도해 주세요."
+        helperAlertTitle = l("helper.alert.title")
+        helperAlertMessage = l("helper.alert.message")
         isHelperApprovalAlertPresented = true
     }
     
@@ -451,14 +455,14 @@ struct ContentView: View {
                     batteryTemperatureText = parsedTemperature.displayText
                     handleSailingModeIfNeeded(batteryLevel: parsedStatus.level)
                     handleThermalProtectionIfNeeded(temperatureCelsius: parsedTemperature.celsius, batteryLevel: parsedStatus.level)
-                    powerStatus = isThermalProtectionActive ? "🔥 열 보호 중 (전원 유지)" : (isForceDischargeEnabled ? "강제 방전 중" : parsedStatus.status)
+                    powerStatus = isThermalProtectionActive ? l("status.thermal_active") : (isForceDischargeEnabled ? l("status.force_discharge_active") : parsedStatus.status)
                     applyCurrentPowerPolicy()
                 }
             case .failure:
                 DispatchQueue.main.async {
                     batteryPercentage = "--%"
                     batteryTemperatureText = "--.-°C"
-                    powerStatus = "상태 확인 실패"
+                    powerStatus = l("status.failed")
                 }
             }
         }
@@ -557,9 +561,9 @@ struct ContentView: View {
     
     func presentAppPicker() {
         let panel = NSOpenPanel()
-        panel.title = "자동 풀충전 앱 선택"
-        panel.message = "실행 시 자동으로 100% 충전을 시작할 앱을 선택하세요."
-        panel.prompt = "추가"
+        panel.title = l("apps.panel.title")
+        panel.message = l("apps.panel.message")
+        panel.prompt = l("apps.add")
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = false
@@ -642,7 +646,7 @@ struct ContentView: View {
             .map(String.init)
         
         guard lines.count >= 2 else {
-            return ("--%", "상태 정보 없음", nil)
+            return ("--%", l("status.no_info"), nil)
         }
         
         let sourceLine = lines[0]
@@ -656,26 +660,26 @@ struct ContentView: View {
         let lowercasedSource = sourceLine.lowercased()
         
         if lowercasedDetail.contains("charging") {
-            return (percentage, "충전 중 | AC 전원 연결됨", level)
+            return (percentage, l("status.charging_ac"), level)
         }
         
         if lowercasedDetail.contains("discharging") {
-            return (percentage, "방전 중 | 배터리 사용", level)
+            return (percentage, l("status.discharging_battery"), level)
         }
         
         if lowercasedDetail.contains("charged") {
-            return (percentage, "충전 완료 | AC 전원 연결됨", level)
+            return (percentage, l("status.charged_ac"), level)
         }
         
         if lowercasedSource.contains("ac power") {
-            return (percentage, "AC 전원 연결됨", level)
+            return (percentage, l("status.ac_connected"), level)
         }
         
         if lowercasedSource.contains("battery power") {
-            return (percentage, "배터리 사용 중", level)
+            return (percentage, l("status.on_battery"), level)
         }
         
-        return (percentage, "전원 상태 확인 중", level)
+        return (percentage, l("status.checking_power"), level)
     }
     
     func parseBatteryTemperature(_ output: String) -> (displayText: String, celsius: Double?) {
