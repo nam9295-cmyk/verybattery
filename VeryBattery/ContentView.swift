@@ -229,6 +229,23 @@ struct ContentView: View {
                 }
             }
             .padding(.horizontal, 16)
+            .padding(.bottom, 12)
+            
+            Divider()
+                .padding(.horizontal, 16)
+            
+            HStack {
+                Spacer()
+                
+                Button("종료", action: quitApp)
+                    .font(.system(size: 11, weight: .medium, design: .default))
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
             .padding(.bottom, 14)
         }
         .frame(width: 270)
@@ -551,6 +568,10 @@ struct ContentView: View {
         }
         
         return url.deletingPathExtension().lastPathComponent
+    }
+    
+    func quitApp() {
+        NSApp.terminate(nil)
     }
     
     func appIcon(for path: String) -> NSImage {
