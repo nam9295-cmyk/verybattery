@@ -55,6 +55,7 @@
 				493184722F74B1490050033E /* Sources */,
 				493184732F74B1490050033E /* Frameworks */,
 				493184742F74B1490050033E /* Resources */,
+				A10000012F74B1490050033E /* Build Privileged Helper */,
 			);
 			buildRules = (
 			);
@@ -103,6 +104,33 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		A10000012F74B1490050033E /* Build Privileged Helper */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/VeryBattery/BatteryPrivilegedProtocol.swift",
+				"$(SRCROOT)/Scripts/VeryBatteryPrivilegedHelper.swift",
+				"$(SRCROOT)/Scripts/com.verygood.VeryBattery.PrivilegedHelper.plist",
+				"$(SRCROOT)/VeryBattery/battery",
+			);
+			name = "Build Privileged Helper";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(FULL_PRODUCT_NAME)/Contents/Library/HelperTools/com.verygood.VeryBattery.PrivilegedHelper",
+				"$(TARGET_BUILD_DIR)/$(FULL_PRODUCT_NAME)/Contents/Library/LaunchDaemons/com.verygood.VeryBattery.PrivilegedHelper.plist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\nAPP_BUNDLE_PATH=\"${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}\"\nHELPER_OUTPUT_DIR=\"${APP_BUNDLE_PATH}/Contents/Library/HelperTools\"\nLAUNCHD_OUTPUT_DIR=\"${APP_BUNDLE_PATH}/Contents/Library/LaunchDaemons\"\nHELPER_OUTPUT_PATH=\"${HELPER_OUTPUT_DIR}/com.verygood.VeryBattery.PrivilegedHelper\"\nHELPER_PLIST_SOURCE=\"${SRCROOT}/Scripts/com.verygood.VeryBattery.PrivilegedHelper.plist\"\nHELPER_PLIST_OUTPUT=\"${LAUNCHD_OUTPUT_DIR}/com.verygood.VeryBattery.PrivilegedHelper.plist\"\nmkdir -p \"${HELPER_OUTPUT_DIR}\" \"${LAUNCHD_OUTPUT_DIR}\"\nxcrun swiftc -DHELPER_TOOL \"${SRCROOT}/VeryBattery/BatteryPrivilegedProtocol.swift\" \"${SRCROOT}/Scripts/VeryBatteryPrivilegedHelper.swift\" -o \"${HELPER_OUTPUT_PATH}\"\nchmod 755 \"${HELPER_OUTPUT_PATH}\"\ncp \"${HELPER_PLIST_SOURCE}\" \"${HELPER_PLIST_OUTPUT}\"\nchmod 644 \"${HELPER_PLIST_OUTPUT}\"\nif [ -n \"${EXPANDED_CODE_SIGN_IDENTITY:-}\" ]; then\n  /usr/bin/codesign --force --sign \"${EXPANDED_CODE_SIGN_IDENTITY}\" --timestamp=none \"${HELPER_OUTPUT_PATH}\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		493184742F74B1490050033E /* Resources */ = {
@@ -162,7 +190,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -223,7 +251,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -246,7 +274,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -289,7 +317,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;

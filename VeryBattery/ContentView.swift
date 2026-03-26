@@ -20,6 +20,13 @@ struct ContentView: View {
     @State private var isRegisteredAppRunning = false
     @State private var lastAppliedCommand = ""
     @State private var tripChargeResetWorkItem: DispatchWorkItem?
+    @State private var isHelperApprovalAlertPresented = false
+    @State private var helperAlertTitle = "관리자 권한 승인 필요"
+    @State private var helperAlertMessage = "배터리 제어를 위해 관리자 권한 helper 승인이 필요합니다."
+    @AppStorage("storedCurrentLimit") private var storedCurrentLimit = 100
+    @AppStorage("storedSailingModeEnabled") private var storedSailingModeEnabled = false
+    @AppStorage("storedForceDischargeEnabled") private var storedForceDischargeEnabled = false
+    @AppStorage("storedThermalProtectionEnabled") private var storedThermalProtectionEnabled = false
     @AppStorage("autoFullChargeApps") private var storedAutoFullChargeApps = "[]"
     
     private let batteryMonitorTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
@@ -99,6 +106,7 @@ struct ContentView: View {
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.mini)
+                    .tint(accentColor)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -122,6 +130,7 @@ struct ContentView: View {
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.mini)
+                    .tint(accentColor)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -145,6 +154,7 @@ struct ContentView: View {
                     .labelsHidden()
                     .toggleStyle(.switch)
                     .controlSize(.mini)
+                    .tint(accentColor)
                     .help("배터리 온도가 35°C를 초과하면 어댑터 전력을 강제로 차단하여 열 손상을 방지합니다.")
             }
             .padding(.horizontal, 16)
@@ -249,20 +259,28 @@ struct ContentView: View {
             .padding(.bottom, 14)
         }
         .frame(width: 270)
+        .alert(helperAlertTitle, isPresented: $isHelperApprovalAlertPresented) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text(helperAlertMessage)
+        }
         // 변경 시 백그라운드 명령어 바로 실행
         .onChange(of: currentLimit) { oldValue, newValue in
+            storedCurrentLimit = newValue
             if newValue != 80 {
                 resetSailingModeControl()
             }
             applyCurrentPowerPolicy()
         }
         .onChange(of: isSailingModeEnabled) { oldValue, newValue in
+            storedSailingModeEnabled = newValue
             if !newValue {
                 resetSailingModeControl()
             }
             applyCurrentPowerPolicy()
         }
         .onChange(of: isForceDischargeEnabled) { oldValue, newValue in
+            storedForceDischargeEnabled = newValue
             handleForceDischargeToggleChange(isEnabled: newValue)
         }
         .onChange(of: autoFullChargeApps) { oldValue, newValue in
@@ -271,6 +289,7 @@ struct ContentView: View {
             applyCurrentPowerPolicy()
         }
         .onChange(of: isThermalProtectionEnabled) { oldValue, newValue in
+            storedThermalProtectionEnabled = newValue
             if !newValue {
                 isThermalProtectionActive = false
                 thermalProtectionHoldLevel = nil
@@ -278,6 +297,7 @@ struct ContentView: View {
             applyCurrentPowerPolicy(force: true)
         }
         .onAppear {
+            restorePersistedSettings()
             loadAutoFullChargeApps()
             refreshRegisteredAppState()
             refreshBatteryStatus()
@@ -326,6 +346,13 @@ struct ContentView: View {
         isSailingChargeBlocked = false
     }
     
+    func restorePersistedSettings() {
+        currentLimit = storedCurrentLimit
+        isSailingModeEnabled = storedSailingModeEnabled
+        isForceDischargeEnabled = storedForceDischargeEnabled
+        isThermalProtectionEnabled = storedThermalProtectionEnabled
+    }
+    
     func handleForceDischargeToggleChange(isEnabled: Bool) {
         if isEnabled {
             resetSailingModeControl()
@@ -340,6 +367,24 @@ struct ContentView: View {
     }
     
     func executeShellCommand(_ command: String) {
+        let arguments = command.split(separator: " ").map(String.init)
+        PrivilegedHelperClient.shared.runCommand(arguments: arguments) { result in
+            switch result {
+            case .success:
+                break
+            case .failure(let error):
+                if case PrivilegedHelperError.helperRequiresApproval = error {
+                    powerStatus = "helper 승인 필요"
+                    presentHelperApprovalAlert()
+                } else {
+                    print("Privileged helper 오류: \(error.localizedDescription)")
+                    executeShellCommandLocally(arguments: arguments)
+                }
+            }
+        }
+    }
+    
+    func executeShellCommandLocally(arguments: [String]) {
         guard let batteryExecutablePath = resolvedBatteryExecutablePath() else {
             print("battery 실행 파일을 찾지 못했습니다.")
             return
@@ -350,8 +395,8 @@ struct ContentView: View {
         
         task.standardOutput = pipe
         task.standardError = pipe
-        task.arguments = ["-c", "\(batteryExecutablePath) \(command)"]
-        task.executableURL = URL(fileURLWithPath: "/bin/zsh")
+        task.arguments = arguments
+        task.executableURL = URL(fileURLWithPath: batteryExecutablePath)
         
         do {
             try task.run()
@@ -366,7 +411,7 @@ struct ContentView: View {
         if isThermalProtectionActive {
             command = "maintain \(thermalProtectionHoldLevel ?? currentLimit)"
         } else if isForceDischargeEnabled {
-            command = "discharge \(currentLimit)"
+            command = "maintain \(currentLimit) --force-discharge"
         } else if isPreparingForTrip || isRegisteredAppRunning {
             command = "maintain 100"
         } else if !autoFullChargeApps.isEmpty {
@@ -385,6 +430,12 @@ struct ContentView: View {
         executeShellCommand(command)
     }
     
+    func presentHelperApprovalAlert() {
+        helperAlertTitle = "관리자 권한 승인 필요"
+        helperAlertMessage = "처음 한 번은 privileged helper 설치 승인이 필요합니다.\n\n암호 입력 또는 시스템 설정의 로그인 항목/백그라운드 항목에서 VeryBattery helper를 허용한 뒤 다시 시도해 주세요."
+        isHelperApprovalAlertPresented = true
+    }
+    
     func refreshBatteryStatus() {
         DispatchQueue.global(qos: .background).async {
             let batteryOutput = runProcess(executablePath: "/usr/bin/pmset", arguments: ["-g", "batt"])
@@ -400,7 +451,7 @@ struct ContentView: View {
                     batteryTemperatureText = parsedTemperature.displayText
                     handleSailingModeIfNeeded(batteryLevel: parsedStatus.level)
                     handleThermalProtectionIfNeeded(temperatureCelsius: parsedTemperature.celsius, batteryLevel: parsedStatus.level)
-                    powerStatus = isThermalProtectionActive ? "🔥 열 보호 중 (전원 유지)" : parsedStatus.status
+                    powerStatus = isThermalProtectionActive ? "🔥 열 보호 중 (전원 유지)" : (isForceDischargeEnabled ? "강제 방전 중" : parsedStatus.status)
                     applyCurrentPowerPolicy()
                 }
             case .failure:
@@ -491,6 +542,11 @@ struct ContentView: View {
     }
     
     func resolvedBatteryExecutablePath() -> String? {
+        if let bundledPath = Bundle.main.path(forResource: "battery", ofType: nil),
+           FileManager.default.isExecutableFile(atPath: bundledPath) {
+            return bundledPath
+        }
+        
         for candidate in batteryExecutableCandidates where FileManager.default.isExecutableFile(atPath: candidate) {
             return candidate
         }

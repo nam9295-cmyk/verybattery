@@ -1,33 +1,67 @@
-# 🍫 VeryBattery
-> **The most elegant and powerful way to preserve your Mac's battery life.**
+# VeryBattery
 
-VeryBattery is a specialized macOS utility designed for creative professionals. It provides granular control over charging limits and features an intelligent heat protection system to ensure your hardware stays healthy during heavy rendering tasks.
+The most elegant and practical way to preserve your Mac's battery life.
 
-## ✨ Key Features
+VeryBattery is a macOS menu bar utility for charge-limit control, thermal protection, and app-based battery automation. It is designed for long plugged-in sessions such as rendering, design work, and laptop desk use.
 
-* **🔋 Smart Charging Limits:** Switch between **80% (Battery Life Mode)** and **100% (Full Power Mode)** with a single click.
-* **🚢 Sailing Mode:** Reduces battery stress by letting the charge drop to 75% naturally before recharging.
-* **🔥 Heat Protection (Bypass):** Automatically pauses charging when the battery temperature exceeds 35°C. It switches to direct AC power (Bypass) to prevent heat damage while keeping your Mac running.
-* **🚀 App-Based Automation:** Automatically triggers 100% charging mode when pro tools like **KeyShot, Blender, or Premiere Pro** are launched.
-* **🎨 Designer-Centric UI:** A clean, intuitive interface inspired by Apple's minimalist aesthetic, featuring a warm beige and deep green palette.
+## Features
 
-## 📦 Installation
+- `80% / 100%` charge limit switching
+- sailing mode with `80% -> 75%` hysteresis
+- forced discharge mode
+- thermal protection with temperature-based charging pause
+- app-based auto full-charge rules
+- trip charging mode for temporary `100%` charging
+- live battery percentage, power source, and temperature monitoring
+- warm beige UI with deep green accents
 
-1.  Download the latest `VeryBattery_v1.0.dmg` from the [Releases](https://github.com/nam9295-cmyk/verybattery/releases) page.
-2.  Right-click the downloaded file and select **'Open'** to bypass the "Unidentified Developer" warning.
-3.  Drag the **VeryBattery** icon into your **Applications** folder.
+## How it works
 
-## 🛠 Tech Stack
+VeryBattery uses the `battery` CLI to control charging behavior.
 
-* **Swift / SwiftUI:** For a native and modern macOS experience.
-* **Battery CLI:** The core engine for system-level battery control.
-* **Shell Scripting:** Real-time hardware sensor data parsing and automation.
+For distribution builds:
 
-## 👨‍💻 Author
+- the `battery` CLI is bundled inside the app package
+- a privileged helper is included for elevated battery-control operations
+- the app talks to the helper through XPC
 
-**John (nam9295-cmyk)**
-* Package & Web Designer at *BerryGood Chocolate* (Daegu, South Korea).
-* Practicing 'Vibe Coding' to bridge the gap between design and engineering.
+Typical runtime flow:
 
----
-*Developed with ❤️ for the creative community.*
+1. Launch `VeryBattery.app`
+2. Open the menu bar popup
+3. Trigger a privileged battery action such as charge maintenance or forced discharge
+4. Approve the helper if macOS requests admin permission
+5. Continue using the app normally after approval
+
+## Installation
+
+1. Copy `VeryBattery.app` to `/Applications`
+2. Launch the app
+3. If macOS blocks the app, allow it in `System Settings > Privacy & Security`
+4. When prompted for helper approval, approve it and retry the action
+
+## Important distribution note
+
+This project is intended for direct distribution, not Mac App Store distribution.
+
+Reasons:
+
+- privileged helper registration is required
+- App Sandbox is disabled
+- battery-control features require elevated system access
+
+## Development
+
+Build in Xcode:
+
+```bash
+xcodebuild -project VeryBattery.xcodeproj -scheme VeryBattery -destination 'platform=macOS' build
+```
+
+## Deployment and QA
+
+Detailed clean-machine test steps, approval flow, signing notes, and deployment checks are documented in [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+## Author
+
+John (`nam9295-cmyk`)
