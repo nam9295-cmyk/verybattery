@@ -2,9 +2,8 @@
   "images" : [
     {
       "filename" : "verybattery.png",
-      "idiom" : "mac",
-      "scale" : "1x",
-      "size" : "1024x1024"
+      "idiom" : "universal",
+      "scale": "2x"
     }
   ],
   "info" : {
@@ -12,6 +11,6 @@
     "version" : 1
   },
   "properties" : {
-    "mac-single-size" : true
+    "template-rendering-intent" : "original"
   }
 }
