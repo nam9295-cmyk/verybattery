@@ -25,6 +25,7 @@ struct ContentView: View {
     private let batteryMonitorTimer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
     private let workspaceNotificationCenter = NSWorkspace.shared.notificationCenter
     private let accentColor = Color(red: 0.36, green: 0.49, blue: 0.41)
+    private let batteryExecutableCandidates = ["/usr/local/bin/battery", "/opt/homebrew/bin/battery"]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -322,12 +323,17 @@ struct ContentView: View {
     }
     
     func executeShellCommand(_ command: String) {
+        guard let batteryExecutablePath = resolvedBatteryExecutablePath() else {
+            print("battery 실행 파일을 찾지 못했습니다.")
+            return
+        }
+        
         let task = Process()
         let pipe = Pipe()
         
         task.standardOutput = pipe
         task.standardError = pipe
-        task.arguments = ["-c", "/opt/homebrew/bin/battery \(command)"]
+        task.arguments = ["-c", "\(batteryExecutablePath) \(command)"]
         task.executableURL = URL(fileURLWithPath: "/bin/zsh")
         
         do {
@@ -343,7 +349,7 @@ struct ContentView: View {
         if isThermalProtectionActive {
             command = "maintain \(thermalProtectionHoldLevel ?? currentLimit)"
         } else if isForceDischargeEnabled {
-            command = "charging off"
+            command = "discharge \(currentLimit)"
         } else if isPreparingForTrip || isRegisteredAppRunning {
             command = "maintain 100"
         } else if !autoFullChargeApps.isEmpty {
@@ -465,6 +471,15 @@ struct ContentView: View {
         case .failure:
             return ""
         }
+    }
+    
+    func resolvedBatteryExecutablePath() -> String? {
+        for candidate in batteryExecutableCandidates where FileManager.default.isExecutableFile(atPath: candidate) {
+            return candidate
+        }
+        
+        let pathOutput = runShellOutput("command -v battery").trimmingCharacters(in: .whitespacesAndNewlines)
+        return pathOutput.isEmpty ? nil : pathOutput
     }
     
     func presentAppPicker() {
